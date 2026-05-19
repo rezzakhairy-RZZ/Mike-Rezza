@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miker's Rezza — Konverter Unit Malaysia</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg:       #050810;
+    --panel:    #090e1c;
+    --panel2:   #070c18;
+    --cyan:     #00f5ff;
+    --cyan-dim: rgba(0,245,255,0.15);
+    --cyan-glow:rgba(0,245,255,0.35);
+    --magenta:  #ff0080;
+    --mag-dim:  rgba(255,0,128,0.15);
+    --yellow:   #ffe600;
+    --green:    #39ff14;
+    --green-dim:rgba(57,255,20,0.15);
+    --border:   #1a3040;
+    --text:     #c8e8f0;
+    --dim:      #4a7a8a;
+    --dimmer:   #2a4a5a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Atmospheric layers ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,245,255,0.012) 2px, rgba(0,245,255,0.012) 4px);
+    pointer-events: none; z-index: 9998;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 32px 20px 28px;
+    position: relative;
+    margin-bottom: 28px;
+  }
+  .header-frame {
+    position: absolute; inset: 0;
+    border: 1px solid var(--border);
+    pointer-events: none;
+  }
+  .header-frame::before {
+    content: '';
+    position: absolute; top: -1px; left: 60px; right: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    box-shadow: 0 0 12px var(--cyan);
+  }
+  .header-frame::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 60px; right: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--magenta), transparent);
+    box-shadow: 0 0 12px var(--magenta);
+  }
+
+  /* corner brackets */
+  .hc { position: absolute; width: 24px; height: 24px; border-color: var(--cyan); border-style: solid; }
+  .hc-tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .hc-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+  .hc-bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+  .hc-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  .sys-tag {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--magenta);
+    border: 1px solid var(--magenta);
+    padding: 3px 14px;
+    letter-spacing: 4px;
+    margin-bottom: 14px;
+    text-shadow: 0 0 8px var(--magenta);
+    box-shadow: 0 0 12px rgba(255,0,128,0.2);
+  }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(26px, 5vw, 48px);
+    font-weight: 900;
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0,245,255,0.7), 0 0 60px rgba(0,245,255,0.25);
+    letter-spacing: 5px;
+    line-height: 1.1;
+    animation: flicker 9s infinite;
+  }
+
+  .tagline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--magenta);
+    letter-spacing: 3px;
+    margin-top: 10px;
+    text-shadow: 0 0 10px rgba(255,0,128,0.5);
+  }
+
+  @keyframes flicker {
+    0%,93%,100%{opacity:1}
+    94%{opacity:.75}
+    95%{opacity:1}
+    97%{opacity:.85}
+    98%{opacity:1}
+  }
+
+  /* ── Category Tabs ── */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+
+  .cat-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-family: 'Orbitron', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 12px 8px 10px;
+    cursor: pointer;
+    transition: all .2s ease;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .cat-btn .ci { font-size: 20px; display: block; margin-bottom: 6px; }
+  .cat-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,245,255,0.04); }
+  .cat-btn.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    text-shadow: 0 0 8px rgba(0,245,255,0.8);
+    box-shadow: 0 0 20px var(--cyan-dim), inset 0 0 20px rgba(0,245,255,0.05);
+  }
+  .cat-btn.active::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+  }
+
+  /* ── Main Panel ── */
+  .main-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .main-panel::before {
+    content: '';
+    position: absolute; top: -1px; left: 30px; right: 30px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan) 40%, var(--magenta) 60%, transparent);
+    box-shadow: 0 0 15px var(--cyan-dim);
+  }
+
+  .section-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--magenta);
+    letter-spacing: 4px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-tag::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--magenta), transparent);
+    opacity: 0.3;
+  }
+
+  /* ── Input area ── */
+  .conv-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .conv-grid { grid-template-columns: 1fr; }
+    .swap-col { display: flex; justify-content: center; transform: rotate(90deg); }
+  }
+
+  .conv-side label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .cp-input {
+    width: 100%;
+    background: #020508;
+    border: 1px solid var(--border);
+    border-bottom: 2px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 28px;
+    padding: 12px 16px;
+    outline: none;
+    transition: all .2s;
+    text-shadow: 0 0 12px rgba(0,245,255,0.4);
+    -moz-appearance: textfield;
+  }
+  .cp-input::-webkit-outer-spin-button,
+  .cp-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .cp-input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 25px var(--cyan-dim), inset 0 0 15px rgba(0,245,255,0.03);
+  }
+  .cp-input::placeholder { color: var(--dimmer); }
+
+  .cp-select {
+    width: 100%;
+    background: #020508;
+    border: 1px solid var(--border);
+    border-bottom: 2px solid var(--magenta);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 36px 10px 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: all .2s;
+    margin-top: 10px;
+  }
+  .cp-select:focus { border-color: var(--magenta); box-shadow: 0 0 20px var(--mag-dim); }
+  .sel-wrap { position: relative; }
+  .sel-arrow {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-25%);
+    color: var(--magenta); font-size: 10px; pointer-events: none;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* swap button */
+  .swap-col { display: flex; align-items: center; justify-content: center; padding-top: 50px; }
+  .swap-btn {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 20px;
+    width: 46px; height: 46px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .swap-btn:hover {
+    background: var(--cyan-dim);
+    box-shadow: 0 0 20px var(--cyan-glow);
+    text-shadow: 0 0 10px var(--cyan);
+  }
+  .swap-btn:active { transform: scale(0.93); }
+
+  /* ── Result ── */
+  .result-box {
+    background: #020508;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--green-dim), transparent 60%);
+    pointer-events: none;
+  }
+  .result-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+  .result-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(22px, 4vw, 36px);
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(57,255,20,0.6);
+    word-break: break-all;
+    line-height: 1.2;
+    transition: all .15s;
+  }
+  .result-unit-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    color: var(--dim);
+    margin-top: 4px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  /* ── Quick Refs ── */
+  .refs-section { margin-top: 4px; }
+  .refs-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--yellow);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+    text-shadow: 0 0 8px rgba(255,230,0,0.4);
+  }
+  .refs-tag::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(255,230,0,0.3), transparent);
+  }
+
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 8px;
+  }
+
+  .ref-card {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    transition: all .15s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .ref-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,230,0,0.3), transparent);
+  }
+  .ref-card:hover { border-color: var(--yellow); background: rgba(255,230,0,0.04); }
+  .ref-from {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+  .ref-to {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--yellow);
+    text-shadow: 0 0 8px rgba(255,230,0,0.4);
+  }
+  .my-tag {
+    display: inline-block;
+    background: var(--mag-dim);
+    border: 1px solid rgba(255,0,128,0.35);
+    color: var(--magenta);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7px;
+    padding: 1px 5px;
+    letter-spacing: 1px;
+    margin-left: 6px;
+    vertical-align: middle;
+    text-shadow: 0 0 6px rgba(255,0,128,0.5);
+  }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    margin-right: 6px;
+    animation: pulse 2.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 20px 0 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--dimmer);
+    letter-spacing: 2px;
+    border-top: 1px solid var(--border);
+  }
+  .footer span { color: var(--magenta); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-frame">
+      <div class="hc hc-tl"></div><div class="hc hc-tr"></div>
+      <div class="hc hc-bl"></div><div class="hc hc-br"></div>
+    </div>
+    <div class="sys-tag">◈ MIKER'S REZZA :: UNIT_CONVERTER v2.0.77 ◈</div>
+    <h1>KONVERTER UNIT</h1>
+    <div class="tagline">▸ MALAYSIA EDITION ◈ TEMPATAN + GLOBAL ◈ CYBERPUNK ◂</div>
+  </div>
+
+  <!-- ── Categories ── -->
+  <div class="cat-grid" id="catGrid"></div>
+
+  <!-- ── Main Panel ── -->
+  <div class="main-panel">
+    <div class="section-tag">▸ INPUT MODULE</div>
+
+    <div class="conv-grid">
+      <!-- FROM -->
+      <div class="conv-side">
+        <label>NILAI INPUT</label>
+        <input class="cp-input" type="number" id="inputVal" value="1" placeholder="0.000">
+        <div class="sel-wrap" style="margin-top:14px;">
+          <label>UNIT ASAL</label>
+          <select class="cp-select" id="fromUnit"></select>
+          <span class="sel-arrow">▼</span>
+        </div>
+      </div>
+
+      <!-- SWAP -->
+      <div class="swap-col">
+        <button class="swap-btn" id="swapBtn" title="Tukar unit">⇄</button>
+      </div>
+
+      <!-- TO -->
+      <div class="conv-side">
+        <label>UNIT SASARAN</label>
+        <div class="sel-wrap">
+          <select class="cp-select" id="toUnit"></select>
+          <span class="sel-arrow">▼</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-box">
+      <div class="result-label">▸ OUTPUT // HASIL PENUKARAN</div>
+      <div class="result-value" id="resultVal">—</div>
+      <div class="result-unit-label" id="resultUnitLabel"></div>
+    </div>
+
+    <!-- Quick refs -->
+    <div class="refs-section">
+      <div class="refs-tag">▸ RUJUKAN PANTAS</div>
+      <div class="ref-grid" id="refGrid"></div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar">
+      <span><span class="status-dot"></span>SISTEM ONLINE</span>
+      <span id="statusInfo">SEDIA</span>
+      <span id="statusTime"></span>
+      <span>MY::CONV::2077</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>MIKER'S REZZA</span> &nbsp;|&nbsp; KONVERTER UNIT MALAYSIA &nbsp;|&nbsp; <span>◈</span> UNIT TEMPATAN + GLOBAL <span>◈</span>
+  </div>
+
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const CATS = [
+  {id:'panjang',  label:'PANJANG',  icon:'📏'},
+  {id:'berat',    label:'BERAT',    icon:'⚖'},
+  {id:'luas',     label:'LUAS',     icon:'🗺'},
+  {id:'isipadu',  label:'ISIPADU',  icon:'🧪'},
+  {id:'suhu',     label:'SUHU',     icon:'🌡'},
+  {id:'masa',     label:'MASA',     icon:'⏱'},
+  {id:'kelajuan', label:'LAJU',     icon:'⚡'},
+  {id:'tekanan',  label:'TEKANAN',  icon:'🔧'},
+];
+
+const UNITS = {
+  panjang: {
+    list: [
+      {id:'meter',   label:'Meter (m)',             f:1},
+      {id:'km',      label:'Kilometer (km)',         f:1000},
+      {id:'cm',      label:'Sentimeter (cm)',        f:0.01},
+      {id:'mm',      label:'Milimeter (mm)',         f:0.001},
+      {id:'inch',    label:'Inci (in)',              f:0.0254},
+      {id:'foot',    label:'Kaki (ft)',              f:0.3048},
+      {id:'yard',    label:'Ela/Yard (yd)',          f:0.9144},
+      {id:'mile',    label:'Batu (mile)',            f:1609.344},
+      {id:'nm',      label:'Nanometer (nm)',         f:1e-9},
+      {id:'depa',    label:'Depa 🇲🇾',             f:1.8288,   my:true},
+      {id:'hasta',   label:'Hasta 🇲🇾',            f:0.4572,   my:true},
+      {id:'jengkal', label:'Jengkal 🇲🇾',          f:0.2286,   my:true},
+      {id:'batu_m',  label:'Batu Melayu 🇲🇾',      f:1852,     my:true},
+      {id:'rantai',  label:'Rantai (chain) 🇲🇾',   f:20.1168,  my:true},
+      {id:'nautical',label:'Batu Nautika',           f:1852},
+    ],
+    refs: [
+      {from:'1 Depa',       to:'6 kaki / 1.83 m'},
+      {from:'1 Hasta',      to:'18 inci / 45.7 cm'},
+      {from:'1 Jengkal',    to:'9 inci / 22.9 cm'},
+      {from:'1 Batu Melayu',to:'1,852 m ≈ 1 batu nautika'},
+      {from:'1 Rantai',     to:'66 kaki / 20.12 m'},
+      {from:'1 Kaki',       to:'12 inci / 30.48 cm'},
+    ]
+  },
+  berat: {
+    list: [
+      {id:'kg',      label:'Kilogram (kg)',          f:1},
+      {id:'g',       label:'Gram (g)',               f:0.001},
+      {id:'mg',      label:'Miligram (mg)',          f:1e-6},
+      {id:'tonne',   label:'Tan Metrik (t)',         f:1000},
+      {id:'lb',      label:'Paun (lb)',              f:0.45359237},
+      {id:'oz',      label:'Auns (oz)',              f:0.028349523},
+      {id:'kati',    label:'Kati 🇲🇾',              f:0.6048,   my:true},
+      {id:'tahil',   label:'Tahil 🇲🇾',             f:0.0378,   my:true},
+      {id:'pikul',   label:'Pikul 🇲🇾',             f:60.48,    my:true},
+      {id:'mayam',   label:'Mayam (Emas) 🇲🇾',      f:0.003888, my:true},
+      {id:'bungkal', label:'Bungkal 🇲🇾',           f:0.01167,  my:true},
+      {id:'amar',    label:'Amar 🇲🇾',              f:0.0006048,my:true},
+    ],
+    refs: [
+      {from:'1 Pikul',  to:'100 Kati = 60.48 kg'},
+      {from:'1 Kati',   to:'16 Tahil = 604.8 g'},
+      {from:'1 Mayam',  to:'3.888 g (timbangan emas)'},
+      {from:'1 Tahil',  to:'37.8 g'},
+      {from:'1 Bungkal',to:'3 Tahil = 11.67 g'},
+      {from:'1 Amar',   to:'⅟₁₆ Kati = 0.6 g'},
+    ]
+  },
+  luas: {
+    list: [
+      {id:'m2',     label:'Meter Persegi (m²)',      f:1},
+      {id:'km2',    label:'Kilometer Persegi (km²)', f:1e6},
+      {id:'cm2',    label:'Sentimeter Persegi (cm²)',f:0.0001},
+      {id:'hektar', label:'Hektar (ha)',             f:10000},
+      {id:'ekar',   label:'Ekar (ac)',               f:4046.8564},
+      {id:'ft2',    label:'Kaki Persegi (ft²)',      f:0.092903},
+      {id:'relung', label:'Relung 🇲🇾',             f:28328.8,  my:true},
+      {id:'jemba',  label:'Jemba 🇲🇾',             f:7082.2,   my:true},
+      {id:'relong', label:'Relong 🇲🇾',             f:1337.8,   my:true},
+      {id:'orlong', label:'Orlong 🇲🇾',             f:5344,     my:true},
+      {id:'rantai2',label:'Rantai Persegi 🇲🇾',     f:404.686,  my:true},
+      {id:'pelong', label:'Pelong 🇲🇾',             f:2832.8,   my:true},
+    ],
+    refs: [
+      {from:'1 Relung',  to:'7 Ekar = 2.83 hektar'},
+      {from:'1 Jemba',   to:'¼ Relung = 1.75 ekar'},
+      {from:'1 Relong',  to:'Digunakan di Kedah/Perlis'},
+      {from:'1 Orlong',  to:'Digunakan di Kelantan/Terengganu'},
+      {from:'1 Pelong',  to:'Digunakan di Perak/Selangor'},
+      {from:'1 Ekar',    to:'4,047 m² ≈ 0.57 Jemba'},
+    ]
+  },
+  isipadu: {
+    list: [
+      {id:'liter',    label:'Liter (L)',             f:1},
+      {id:'ml',       label:'Mililiter (mL)',        f:0.001},
+      {id:'m3',       label:'Meter Padu (m³)',       f:1000},
+      {id:'cm3',      label:'Sentimeter Padu (cc)',  f:0.001},
+      {id:'gallon_us',label:'Gelen US (gal)',        f:3.785411784},
+      {id:'gallon_uk',label:'Gelen Imperial (UK)',   f:4.54609},
+      {id:'pint_uk',  label:'Pint (UK)',             f:0.568261},
+      {id:'fl_oz',    label:'Fluid Ounce (fl oz)',   f:0.0295735},
+      {id:'cupan',    label:'Cawan (cup MY) 🇲🇾',   f:0.227,    my:true},
+      {id:'gantang',  label:'Gantang 🇲🇾',          f:4.54609,  my:true},
+      {id:'tahil_v',  label:'Tahil Cecair 🇲🇾',     f:0.03785,  my:true},
+    ],
+    refs: [
+      {from:'1 Gantang',    to:'4.546 L (= imperial gallon)'},
+      {from:'1 Cawan MY',   to:'227 mL'},
+      {from:'1 Senduk',     to:'15 mL (1 sudu besar)'},
+      {from:'1 Sudu Kecil', to:'5 mL'},
+      {from:'1 Gelen US',   to:'3.785 L'},
+      {from:'1 Pint UK',    to:'568 mL'},
+    ]
+  },
+  suhu: {
+    special: true,
+    list: [
+      {id:'celsius',    label:'Celsius (°C)',      f:1},
+      {id:'fahrenheit', label:'Fahrenheit (°F)',   f:1},
+      {id:'kelvin',     label:'Kelvin (K)',         f:1},
+    ],
+    refs: [
+      {from:'0°C',          to:'32°F = 273.15 K'},
+      {from:'100°C',        to:'212°F = 373.15 K'},
+      {from:'37°C',         to:'98.6°F (suhu badan)'},
+      {from:'-40°C',        to:'-40°F (titik sama)'},
+      {from:'Titik beku',   to:'0°C = 32°F'},
+      {from:'Titik didih',  to:'100°C = 212°F'},
+    ]
+  },
+  masa: {
+    list: [
+      {id:'second', label:'Saat (s)',            f:1},
+      {id:'minute', label:'Minit (min)',          f:60},
+      {id:'hour',   label:'Jam (h)',              f:3600},
+      {id:'day',    label:'Hari',                 f:86400},
+      {id:'week',   label:'Minggu',               f:604800},
+      {id:'month',  label:'Bulan (30 hari)',      f:2592000},
+      {id:'year',   label:'Tahun (365 hari)',     f:31536000},
+      {id:'ms',     label:'Milisaat (ms)',        f:0.001},
+      {id:'us',     label:'Mikrosaat (µs)',       f:1e-6},
+    ],
+    refs: [
+      {from:'1 Tahun',  to:'365 hari / 8,760 jam'},
+      {from:'1 Bulan',  to:'30 hari (anggaran)'},
+      {from:'1 Minggu', to:'7 hari / 168 jam'},
+      {from:'1 Hari',   to:'24 jam / 1,440 minit'},
+      {from:'1 Jam',    to:'60 minit / 3,600 saat'},
+      {from:'1 Minit',  to:'60 saat'},
+    ]
+  },
+  kelajuan: {
+    list: [
+      {id:'ms',   label:'Meter/Saat (m/s)',         f:1},
+      {id:'kmh',  label:'Kilometer/Jam (km/h)',      f:0.277778},
+      {id:'mph',  label:'Batu/Jam (mph)',            f:0.44704},
+      {id:'knot', label:'Knot (kn)',                 f:0.514444},
+      {id:'mach', label:'Mach (Ma)',                 f:340.29},
+      {id:'ftps', label:'Kaki/Saat (ft/s)',          f:0.3048},
+      {id:'cms',  label:'Sentimeter/Saat (cm/s)',    f:0.01},
+    ],
+    refs: [
+      {from:'1 Mach',           to:'1,234.8 km/h'},
+      {from:'Had Lebuh Raya MY', to:'110 km/h'},
+      {from:'Had Bandar MY',    to:'50 km/h'},
+      {from:'1 Knot',           to:'1.852 km/h (laut/udara)'},
+      {from:'Cahaya',           to:'299,792,458 m/s'},
+      {from:'Bunyi (udara)',    to:'343 m/s = 1,235 km/h'},
+    ]
+  },
+  tekanan: {
+    list: [
+      {id:'pa',   label:'Pascal (Pa)',               f:1},
+      {id:'kpa',  label:'KiloPascal (kPa)',          f:1000},
+      {id:'mpa',  label:'MegaPascal (MPa)',          f:1e6},
+      {id:'bar',  label:'Bar',                       f:100000},
+      {id:'mbar', label:'Millibar (mbar)',           f:100},
+      {id:'atm',  label:'Atmosfera (atm)',           f:101325},
+      {id:'psi',  label:'PSI (lb/in²)',              f:6894.76},
+      {id:'mmhg', label:'mmHg (Torr)',               f:133.322},
+    ],
+    refs: [
+      {from:'1 atm',             to:'101.325 kPa = 14.696 PSI'},
+      {from:'Tayar kereta (MY)', to:'~32–36 PSI (2.2–2.5 bar)'},
+      {from:'Tekanan darah norm',to:'120/80 mmHg'},
+      {from:'1 bar',             to:'100 kPa ≈ 14.5 PSI'},
+      {from:'Tekanan laut dalam',to:'~1 bar / 10 m kedalaman'},
+      {from:'Udara di puncak MY',to:'~70 kPa (Gunung Kinabalu)'},
+    ]
+  },
+};
+
+// ── State ──────────────────────────────────────────────
+let activeCat = 'panjang';
+
+// ── Conversion Logic ──────────────────────────────────
+function convertTemp(val, from, to) {
+  let c;
+  if (from === 'celsius')    c = val;
+  else if (from === 'fahrenheit') c = (val - 32) * 5/9;
+  else                       c = val - 273.15;
+
+  if (to === 'celsius')    return c;
+  if (to === 'fahrenheit') return c * 9/5 + 32;
+  return c + 273.15;
+}
+
+function convert(val, cat, from, to) {
+  const data = UNITS[cat];
+  if (data.special) return convertTemp(val, from, to);
+  const fu = data.list.find(u => u.id === from);
+  const tu = data.list.find(u => u.id === to);
+  if (!fu || !tu) return null;
+  return val * fu.f / tu.f;
+}
+
+function fmt(n) {
+  if (n === null || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1e12 || (abs < 1e-6 && abs !== 0)) return n.toExponential(4);
+  if (Number.isInteger(n) && abs < 1e10) return n.toLocaleString('ms-MY');
+  const s = parseFloat(n.toPrecision(8));
+  return s.toLocaleString('ms-MY', { maximumFractionDigits: 8 });
+}
+
+// ── DOM Builders ──────────────────────────────────────
+function buildCats() {
+  const g = document.getElementById('catGrid');
+  g.innerHTML = CATS.map(c => `
+    <button class="cat-btn${c.id === activeCat ? ' active' : ''}" onclick="setCat('${c.id}')">
+      <span class="ci">${c.icon}</span>${c.label}
+    </button>`).join('');
+}
+
+function buildUnits() {
+  const data = UNITS[activeCat];
+  const fs = document.getElementById('fromUnit');
+  const ts = document.getElementById('toUnit');
+  const fv = fs.value, tv = ts.value;
+
+  const mkOpts = () => data.list.map(u =>
+    `<option value="${u.id}">${u.label}${u.my ? '' : ''}</option>`
+  ).join('');
+
+  fs.innerHTML = mkOpts();
+  ts.innerHTML = mkOpts();
+
+  if (data.list.find(u => u.id === fv)) fs.value = fv;
+  else fs.value = data.list[0].id;
+
+  if (data.list.find(u => u.id === tv)) ts.value = tv;
+  else ts.value = data.list[1] ? data.list[1].id : data.list[0].id;
+}
+
+function buildRefs() {
+  const refs = UNITS[activeCat].refs || [];
+  document.getElementById('refGrid').innerHTML = refs.map(r => `
+    <div class="ref-card">
+      <div class="ref-from">${r.from}</div>
+      <div class="ref-to">= ${r.to}</div>
+    </div>`).join('');
+}
+
+function doConvert() {
+  const val  = parseFloat(document.getElementById('inputVal').value);
+  const from = document.getElementById('fromUnit').value;
+  const to   = document.getElementById('toUnit').value;
+
+  if (isNaN(val)) {
+    document.getElementById('resultVal').textContent = '—';
+    document.getElementById('resultUnitLabel').textContent = '';
+    return;
+  }
+
+  const res = convert(val, activeCat, from, to);
+  const tu  = UNITS[activeCat].list.find(u => u.id === to);
+
+  document.getElementById('resultVal').textContent = fmt(res);
+  document.getElementById('resultUnitLabel').textContent = tu ? tu.label : '';
+  document.getElementById('statusInfo').textContent =
+    (from + ' → ' + to).toUpperCase();
+}
+
+function setCat(id) {
+  activeCat = id;
+  buildCats();
+  buildUnits();
+  buildRefs();
+  doConvert();
+}
+
+// ── Events ────────────────────────────────────────────
+document.getElementById('swapBtn').addEventListener('click', () => {
+  const f = document.getElementById('fromUnit');
+  const t = document.getElementById('toUnit');
+  const tmp = f.value; f.value = t.value; t.value = tmp;
+  doConvert();
+});
+
+document.getElementById('inputVal').addEventListener('input', doConvert);
+document.getElementById('fromUnit').addEventListener('change', doConvert);
+document.getElementById('toUnit').addEventListener('change', doConvert);
+
+// ── Clock ─────────────────────────────────────────────
+function tick() {
+  const now = new Date();
+  document.getElementById('statusTime').textContent =
+    now.toLocaleTimeString('ms-MY', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+tick(); setInterval(tick, 1000);
+
+// ── Init ──────────────────────────────────────────────
+buildCats(); buildUnits(); buildRefs(); doConvert();
+</script>
+</body>
+</html>
